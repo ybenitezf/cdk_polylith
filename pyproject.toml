@@ -7,6 +7,8 @@ readme = "README.md"
 
 packages = [
     {include = "cdk_workshop/workshop_app", from = "bases"},
+    {include = "cdk_workshop/hello_lambda", from = "bases"},
+    {include = "cdk_workshop/hitcounter_lambda", from = "bases"},
     {include = "cdk_workshop/hit_counter", from = "components"},
     {include = "cdk_workshop/cdk_workshop_stack", from = "components"}
 ]
@@ -16,6 +18,7 @@ python = "^3.10"
 aws-cdk-lib = ">=2.68,<3.0"
 constructs = ">=10.0.0,<11.0.0"
 cdk-dynamo-table-view = "0.2.438"
+boto3 = "^1.26.123"
 
 
 [tool.poetry.group.dev.dependencies]
