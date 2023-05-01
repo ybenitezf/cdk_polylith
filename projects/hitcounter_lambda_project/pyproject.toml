@@ -11,7 +11,7 @@ packages = [
 
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 boto3 = "^1.26.123"
 
 [tool.poetry.group.dev.dependencies]

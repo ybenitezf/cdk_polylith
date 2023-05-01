@@ -16,7 +16,7 @@ class CdkWorkshopStack(Stack):
         hello = _lambda.Function(
             self,
             "HelloHandler",
-            runtime=_lambda.Runtime.PYTHON_3_7,
+            runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset(
                 "lambda/hello",
                 bundling=BundlingOptions(

@@ -26,7 +26,7 @@ class HitCounter(Construct):
         self._handler = _lambda.Function(
             self,
             "HitCounterHandler",
-            runtime=_lambda.Runtime.PYTHON_3_7,
+            runtime=_lambda.Runtime.PYTHON_3_9,
             handler="cdk_workshop.hitcounter_lambda.core.handler",
             code=_lambda.Code.from_asset(
                 "lambda/hitcounter",
