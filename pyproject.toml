@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "cdk-polylith"
+version = "0.1.0"
+description = ""
+authors = ["Yoel Benitez Fonseca <ybenitezf@gmail.com>"]
+readme = "README.md"
+packages = [{include = "cdk_polylith"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
