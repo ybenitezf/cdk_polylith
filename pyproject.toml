@@ -4,7 +4,11 @@ version = "0.1.0"
 description = ""
 authors = ["Yoel Benitez Fonseca <ybenitezf@gmail.com>"]
 readme = "README.md"
-packages = [{include = "cdk_polylith"}]
+
+packages = [
+    {include = "cdk_workshop/hit_counter", from = "components"},
+    {include = "cdk_workshop/cdk_workshop_stack", from = "components"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
