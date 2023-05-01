@@ -1,5 +1,6 @@
 from constructs import Construct
 from aws_cdk import aws_lambda as _lambda, aws_dynamodb as ddb
+from aws_cdk import BundlingOptions
 
 
 class HitCounter(Construct):
@@ -26,8 +27,18 @@ class HitCounter(Construct):
             self,
             "HitCounterHandler",
             runtime=_lambda.Runtime.PYTHON_3_7,
-            handler="hitcount.handler",
-            code=_lambda.Code.from_asset("lambda"),
+            handler="cdk_workshop.hitcounter_lambda.core.handler",
+            code=_lambda.Code.from_asset(
+                "lambda/hitcounter",
+                bundling=BundlingOptions(
+                    image=_lambda.Runtime.PYTHON_3_9.bundling_image,
+                    command=[
+                        "bash", "-c",
+                        "pip install -r requirements.txt -t"
+                        " /asset-output && cp -au . /asset-output"
+                    ]
+                )
+            ),
             environment={
                 "DOWNSTREAM_FUNCTION_NAME": downstream.function_name,
                 "HITS_TABLE_NAME": self._table.table_name,

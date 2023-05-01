@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "hitcounter_lambda_project"
+version = "0.1.0"
+description = ""
+authors = ['Yoel Benitez Fonseca <ybenitezf@gmail.com>']
+license = ""
+
+packages = [
+    {include = "cdk_workshop/hitcounter_lambda", from = "../../bases"}
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.10"
+boto3 = "^1.26.123"
+
+[tool.poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

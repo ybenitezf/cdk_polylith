@@ -1,6 +1,6 @@
 from constructs import Construct
 from aws_cdk import (
-    Stack,
+    Stack, BundlingOptions,
     aws_lambda as _lambda,
     aws_apigateway as apigw,
 )
@@ -17,8 +17,18 @@ class CdkWorkshopStack(Stack):
             self,
             "HelloHandler",
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.from_asset("lambda"),
-            handler="hello.handler",
+            code=_lambda.Code.from_asset(
+                "lambda/hello",
+                bundling=BundlingOptions(
+                    image=_lambda.Runtime.PYTHON_3_9.bundling_image,
+                    command=[
+                        "bash", "-c",
+                        "pip install -r requirements.txt -t"
+                        " /asset-output && cp -au . /asset-output"
+                    ]
+                )
+            ),
+            handler="cdk_workshop.hello_lambda.core.handler",
         )
 
         hello_with_counter = HitCounter(self, "HelloHitCounter", downstream=hello)
