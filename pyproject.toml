@@ -6,6 +6,7 @@ authors = ["Yoel Benitez Fonseca <ybenitezf@gmail.com>"]
 readme = "README.md"
 
 packages = [
+    {include = "cdk_workshop/workshop_app", from = "bases"},
     {include = "cdk_workshop/hit_counter", from = "components"},
     {include = "cdk_workshop/cdk_workshop_stack", from = "components"}
 ]
