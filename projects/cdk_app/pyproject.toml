@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "cdk_app"
+version = "0.1.0"
+description = ""
+authors = ['Yoel Benitez Fonseca <ybenitezf@gmail.com>']
+license = ""
+
+packages = [
+    {include = "cdk_workshop/workshop_app", from = "../../bases"},
+    {include = "cdk_workshop/hit_counter", from = "../../components"},
+    {include = "cdk_workshop/cdk_workshop_stack", from = "../../components"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aws-cdk-lib = ">=2.68,<3.0"
+constructs = ">=10.0.0,<11.0.0"
+cdk-dynamo-table-view = "0.2.438"
+
+[tool.poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
