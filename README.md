@@ -1,10 +1,16 @@
-In this article we will see a way to achieve a "monorepo" architecture for the code using [Polylith](https://polylith.gitbook.io/polylith/) philosophy and a couple of [poetry](https://python-poetry.org/docs/) plugins to achieve this in a Python CDK applications.
+## Monorepo architecture for Python code with Polylith and Poetry
+
+By: Yoel Benitez Fonseca
+
+Review and Corrections by: Robmay S. Garcia
+
+This article explores a technique or methodology for achieving a "monorepo" architecture for code by leveraging the [Polylith](https://polylith.gitbook.io/polylith/) philosophy, along with a few [poetry](https://python-poetry.org/docs/) plugins, for implementation in Python CDK applications.
 
 ---
 
 ## Requirements
 
-As advertised go ahead and install poetry and the plugins:
+Let's go ahead and get our dependencies installed for poetry and the plugins:
 
 ```bash
 curl -sSL https://install.python-poetry.org | python3 -
@@ -12,17 +18,18 @@ poetry self add poetry-multiproject-plugin
 poetry self add poetry-polylith-plugin
 ```
 
-I left to you to read about the plugins for poetry, you can find details on the author repositories for [multiproject](https://github.com/DavidVujic/poetry-multiproject-plugin) and for [polylith](https://davidvujic.github.io/python-polylith-docs/).
-
-Also, you will need `aws cdk` installed on your system, i recommend to follow the [requirements section of the aws cdk workshop site](https://cdkworkshop.com/15-prerequisites.html):
+You will also need  `AWS CDK` installed on your system. I will recommend you to follow the [requirements section of the aws cdk workshop site](https://cdkworkshop.com/15-prerequisites.html):
 
 ```bash
 npm install -g aws-cdk
 ```
 
+Here I leave some additional readings about poetry and its plugins.[multiproject](https://github.com/DavidVujic/poetry-multiproject-plugin) and for [polylith](https://davidvujic.github.io/python-polylith-docs/).
+
+
 ## Starting point
 
-I will assume as a starting point the final version of the CDK Python Workshop, we will simply copy the code from the folder [https://github.com/aws-samples/aws-cdk-intro-workshop/tree/master/code/python/main-workshop](https://github.com/aws-samples/aws-cdk-intro-workshop/tree/master/code/python/main-workshop) and this will be our [first commit](https://github.com/ybenitezf/cdk_polylith/commit/dc0033ffb7bfc30f604692948a9390b228c92af6), the source tree should looks like:
+Let's get started. As a starting point we will be using the final version of the CDK Python Workshop. Simply clone the code from the repository  [https://github.com/aws-samples/aws-cdk-intro-workshop/tree/master/code/python/main-workshop](https://github.com/aws-samples/aws-cdk-intro-workshop/tree/master/code/python/main-workshop). Our [first commit](https://github.com/ybenitezf/cdk_polylith/commit/dc0033ffb7bfc30f604692948a9390b228c92af6) will be like this and the resulting source tree should looks like:
 
 ```
 .
@@ -41,13 +48,13 @@ I will assume as a starting point the final version of the CDK Python Workshop, 
 └── source.bat
 ```
 
-First of all let's turn this into a poetry project executing:
+Now, let's turn this source tree into a poetry project by executing:
 
 ```bash
 poetry init
 ```
 
-When asked for the main and development dependencies answer no, since we will add then later. The result should looks something like (`pyproject.toml`):
+When asked for the main and development dependencies answer no, we will add then later. The result should look like (`pyproject.toml`):
 
 ```toml
 [tool.poetry]
@@ -66,7 +73,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 ```
 
-Additionally, lets add a poetry config to make poetry build the python virtual environment in the project folder before installing the dependencies, let create a `poetry.toml` file with the content:
+Additionally, let's add a poetry configuration file `poetry.toml` to have poetry build the python virtual environment in the project folder before installing the dependencies. The file content should look like:
 
 ```toml
 [virtualenvs]
@@ -74,21 +81,22 @@ path = ".venv"
 in-project = true
 ```
 
-And add [a commit](https://github.com/ybenitezf/cdk_polylith/commit/08b4391ea1298c86a92ec3c7829dde22bba00113) with this.
+Create [a commit](https://github.com/ybenitezf/cdk_polylith/commit/08b4391ea1298c86a92ec3c7829dde22bba00113) with what we already have.
+
 
 ## Configuring polylith
 
-Before delving into the code it's is recommended to read the core concepts of polylith: [workspace](https://polylith.gitbook.io/polylith/architecture/2.1.-workspace), [component](https://polylith.gitbook.io/polylith/architecture/2.3.-component), [base](https://polylith.gitbook.io/polylith/architecture/2.2.-base), [project](https://polylith.gitbook.io/polylith/architecture/2.6.-project) and [development project](https://polylith.gitbook.io/polylith/architecture/2.4.-development) taking into account that the [python-polylith](https://github.com/DavidVujic/python-polylith) is an adaptation of those concepts for Python.
+Before delving into the code, I strongly recommend you to read the following polylith core concepts: [workspace](https://polylith.gitbook.io/polylith/architecture/2.1.-workspace), [component](https://polylith.gitbook.io/polylith/architecture/2.3.-component), [base](https://polylith.gitbook.io/polylith/architecture/2.2.-base), [project](https://polylith.gitbook.io/polylith/architecture/2.6.-project) and [development project](https://polylith.gitbook.io/polylith/architecture/2.4.-development) taking into account that the [python-polylith](https://github.com/DavidVujic/python-polylith) is an adaptation of those concepts for Python.
 
-Running (once) the following command in our repository will create the necessary folder structure to our project:
+For those of you who are impatient, running the following command (only once) in our repository will create the necessary folder structure for our project:
 
 ```bash
 poetry poly create workspace --name="cdk_workshop" --theme=loose
 ```
 
-> **note**: The `--name` parameter here will set the base package structure, all the code then will be imported from this namespace, for example `from cdk_workshop ...` for more see the [oficial documentation](https://davidvujic.github.io/python-polylith-docs/)
+> **note**: The `--name` parameter here will set the base package structure, all the code then will be imported from this namespace, for example `from cdk_workshop ...` for more details on this read the [official documentation](https://davidvujic.github.io/python-polylith-docs/)
 
-After this command our source tree will look like (note the new folders: bases, components, development and projects):
+After running the above command our source tree will look like this, note the new folders created (bases, components, development, and projects):
 
 ```
 .
@@ -114,13 +122,14 @@ After this command our source tree will look like (note the new folders: bases, 
 └── workspace.toml
 ```
 
-The `workspace.toml` will configure the behavior of the `poetry poly ...` commands
+The `workspace.toml` file will configure the behavior of the `poetry poly ...` commands
 
-Let's add [this commit](https://github.com/ybenitezf/cdk_polylith/commit/bfc66d18ba91139e46251e446f2fbb3d14253f67). From now on, we will be moving the old code to this new structure.
+Let's create a new [ commit](https://github.com/ybenitezf/cdk_polylith/commit/bfc66d18ba91139e46251e446f2fbb3d14253f67). From now on, we will be moving the old code to this new structure.
 
-## Project requirements, requirements, requirements
 
-Before we go further let's install the poetry project:
+## Managing project requirements.
+
+Before we go any further let's install the poetry project:
 
 ```bash
 poetry install
@@ -128,7 +137,7 @@ poetry install
 
 > **note**: ignore the warning about the project not containing any element's
 
-And now we move ours dependencies from `requirements.txt` and `requirements-dev.txt` to the `pyproject.toml` format:
+And now we move our dependencies from `requirements.txt` and `requirements-dev.txt` to the `pyproject.toml` format:
 
 ```bash
 poetry add aws-cdk-lib~=2.68
@@ -136,19 +145,20 @@ poetry add 'constructs>=10.0.0,<11.0.0'
 poetry add cdk-dynamo-table-view==0.2.438
 ```
 
-And dev requirements:
+And for dev requirements:
 
 ```bash
 poetry add pytest==7.2.2 -G dev
 ```
 
-We can remove now `requirements.txt` and `requirements-dev.txt` because those will be managed by the `pyproject.toml`, the new versión will looks like:
+Now we can remove  `requirements.txt` and `requirements-dev.txt` files because they will be managed by the `pyproject.toml`. The content of the file will now look like:
 
 ![pyproject.toml after adding the requirements](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/ows5ycgnhoek2ell67sc.png)
 
-All this [changes are in this commit](https://github.com/ybenitezf/cdk_polylith/commit/a05638728e299fadd5f7498e00abcb648956d590).
+All the [changes will be visible in this commit](https://github.com/ybenitezf/cdk_polylith/commit/a05638728e299fadd5f7498e00abcb648956d590).
 
-> **note**: poetry developers recommend to add the `poetry.lock` to the repository, some others have reported problems between architecture changes and the `.lock` file, so i will leave to you where to include or not this file.
+> **note**: Poetry developers recommend to add the `poetry.lock` to the repository. Other developers have reported problems with architecture changes and the `.lock` file, so I will leave it up to you to decide if you want to use it or not.
+
 
 # Components
 
@@ -156,18 +166,18 @@ From the polylith documentation (https://polylith.gitbook.io/polylith/architectu
 
 > A component is an encapsulated block of code that can be assembled together with a base (it's often just a single base) and a set of components and libraries into services, libraries or tools. Components achieve encapsulation and composability by separating their private implementation from their public interface.
 
-So in CDK term's our's component should be _Stacks_ or _Construct's_ since this are the reusable parts.
+So in CDK term's our component should be _Stacks_ or _Constructs_ since this are the reusable parts.
 
-In this application we have the `HitCounter` construct and the `CdkWorkshopStack` stack, lets add then as components to our project:
+In this application we have the `HitCounter` construct and the `CdkWorkshopStack` stack, lets add them as components to our project:
 
 ```
 poetry poly create component --name hit_counter
 poetry poly create component --name cdk_workshop_stack
 ```
 
-Automatically we will get a new directory under `components` with the name of the workspace (`cdk_workshop`) and under this a python package for each of the components. The same has happened to the test's folder (that is way we put `--theme=loose` when creating the workspace).
+We will get a new directory under `components` with the name of the workspace (`cdk_workshop`) and under this a python package for each of the components. The same has happened to the tests folder (that is why we used `--theme=loose` when creating the workspace).
 
-We need now to modify `pyproject.toml` to recognize the new components, edit and add the following to the package property in the `[tool.poetry]` section:
+Next, we need to modify `pyproject.toml` to recognize this components. Edit and add the following to the package property in the `[tool.poetry]` section:
 
 ```toml
 packages = [
@@ -176,39 +186,39 @@ packages = [
 ]
 ```
 
-To ensure all is fine, run:
+To make sure all is fine, run:
 
 ```bash
 poetry install && poetry run pytest test/
 ```
 
-if we run now `poetry poly info` we will see our new components listed under the bricks section
+if we run  `poetry poly info` we will see our new components listed under the bricks section
 
 ![poetry poly info](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/4ff7di6dixc18qoklswk.png)
 
-Let's [commit this](https://github.com/ybenitezf/cdk_polylith/commit/b77d8d5272bd629efb3588d6df151e19079c8061) before moving the code.
+Alright, let's [commit this changes](https://github.com/ybenitezf/cdk_polylith/commit/b77d8d5272bd629efb3588d6df151e19079c8061) before moving into the code.
 
-### `hit_counter` component
+### The `hit_counter` component
 
-First with the the `HitCounter` construct, we will copy the code from `cdk_workshop/hitcounter.py` to `components/cdk_workshop/hit_counter/core.py`
+Now that we have a `HitCounter` construct, we will copy the code in `cdk_workshop/hitcounter.py` to `components/cdk_workshop/hit_counter/core.py` by executing:
 
 ```bash
 cp cdk_workshop/hitcounter.py components/cdk_workshop/hit_counter/core.py
 git rm cdk_workshop/hitcounter.py
 ```
 
-The code in this construct will need more refactoring, we will come back later for now we [commit this as it is](https://github.com/ybenitezf/cdk_polylith/commit/9e17a1f7ff9e2537453ee7e80bacfd665d10a647).
+The code in this construct will need additional refactoring but we will come back to it later, for now we [commit this change as is](https://github.com/ybenitezf/cdk_polylith/commit/9e17a1f7ff9e2537453ee7e80bacfd665d10a647).
 
-### `cdk_workshop_stack` component
+### The `cdk_workshop_stack` component
 
-And with the `CdkWorkshopStack` we repeat the process:
+We repeat the same process for the  `CdkWorkshopStack` component, just change the file name and destination as shown below:
 
 ```
 cp cdk_workshop/cdk_workshop_stack.py components/cdk_workshop/cdk_workshop_stack/core.py
 git rm cdk_workshop/*
 ```
 
-There is a dependency, `cdk_workshop_stack` need's the construct defined in `hit_counter` so we need to edit `components/cdk_workshop/cdk_workshop_stack/core.py` and fix the import in the line 8:
+Now, pay attention to this little but important detail. There is a dependency between both components, `cdk_workshop_stack` needs the construct defined in `hit_counter` so we need to edit `components/cdk_workshop/cdk_workshop_stack/core.py` file to fix the import statement as shown in line 8 of the following snippet:
 
 ```python
 from constructs import Construct
@@ -223,9 +233,10 @@ from cdk_workshop.hit_counter.core import HitCounter
 ...
 ```
 
-> **Note**: now we use the full path to the class in the component (`cdk_workshop.hit_counter.core`), `cdk_workshop` the workspace, `hit_counter` the component and `core` witch is a module in `hit_counter`, and this makes the component `cdk_workshop_stack` depends on the `hit_counter` component and for the first we need the second.
+> **Note**: Now we are able to use the fully qualified path to the class component like (`cdk_workshop.hit_counter.core`). The path is composed by `cdk_workshop` the workspace, `hit_counter` the component, and `core` the module in `hit_counter`.
 
-This will add [another commit](https://github.com/ybenitezf/cdk_polylith/commit/c57b58c0a0f15044f59dbb52c6d981ba83d02165).
+Let's add [another commit](https://github.com/ybenitezf/cdk_polylith/commit/c57b58c0a0f15044f59dbb52c6d981ba83d02165).
+
 
 ## Bases
 
@@ -234,7 +245,7 @@ From the polylith documentation (https://polylith.gitbook.io/polylith/architectu
 > A base has a "thin" implementation which delegates to components where the business logic is implemented.
 > A base has one role and that is to be a bridge between the outside world and the logic that performs the "real work", our components. Bases don't perform any business logic themselves, they only delegate to components.
 
-So in the context of the Aws CDK application the candidate for a base will be the module that defines the application and do the synthesis, in other words the code that now resides on `app.py`.
+So, in the context of the AWS CDK application the candidate for a base will be the module that defines the application and do the synthesis, in other words the code that now resides on `app.py`.
 
 Let's add a base to the project:
 
@@ -242,9 +253,9 @@ Let's add a base to the project:
 poetry poly create base --name workshop_app
 ```
 
-Like in the case of the components, the previous command, will add a new package but in the bases directory: `bases/cdk_workshop/workshop_app` with a module for us to define the code of our base - `poetry poly` will add a demo test code to.
+Like in the case of the components, the previous command, will add a new package but in the bases directory. This time, under the path `bases/cdk_workshop/workshop_app` with a module for us to define the code of our base - `poetry poly` will add a demo test code too.
 
-We need to alter our package list on `pyproject.toml` to add the new base to the Python project:
+We need to alter our package list on `pyproject.toml` to add the newly created base to the Python project:
 
 ```toml
 packages = [
@@ -261,7 +272,7 @@ cp app.py bases/cdk_workshop/workshop_app/core.py
 git rm app.py
 ```
 
-The content of should be like:
+The file content should look like:
 
 ```python
 import aws_cdk as cdk
@@ -279,21 +290,23 @@ The result can be seen [in this commit](https://github.com/ybenitezf/cdk_polylit
 
 If you run `poetry poly info` you should see something like this:
 
-![Image description](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/143ofyw8wag2y2dta7hk.png)
+![Workspace Summary](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/143ofyw8wag2y2dta7hk.png)
+
 
 ### Remarks 
 
-I propose a base for each cdk application if more than one is necessary, each base will use and reuse the stacks and constructs defined in the components.
+I suggest the use of a single base for each cdk application, but if more than one is necessary, each base should reuse the stacks and constructs defined in the components.
 
-If you are facing a large CDK project i recommend maintaining a single component package (a single component in polylith witch is a python package) for all the constructs, one construct per module. And a component for each Stack, the reason being to maintain a single source of dependencies between the components in the project: `construct component ->  stack component` assuming the stack's components do not depend on the others stack components.
+If you are facing a large CDK project, I recommend maintaining a single component package (a single component in polylith is a python package) for all the constructs, one construct per module. And a component for each Stack, the reason being to maintain a single source of dependencies between the components in the project: `construct component ->  stack component` assuming the stack's components do not depend on the others stack components.
+
 
 ## Projects
 
 > Projects configure Polylith's deployable artifacts.
 
-In other words, projects define what we deploy, we combine one (or several bases but that's is rare) bases and several components into an artifact that allow's us to deploy our code.
+In other words, projects define what we deploy, we combine one (or several bases but that's rare) base and several components into an artifact that allow us to deploy our code.
 
-In polylith the projects live in the `projects` folder and they ***should not contain code*** unless sough code is related to the deployment or building of the artifacts, in resume no python code there.
+In polylith the projects live in the `projects` folder and they ***should not contain code*** unless such code is related to the deployment or building of the artifacts, in other words ***no python code there***.
 
 A CDK application is defined by the `cdk.json` file, in our case:
 
@@ -310,13 +323,13 @@ A CDK application is defined by the `cdk.json` file, in our case:
 }
 ```
 
-Note the content of the `"app"` key, we removed `app.py` and now we need to do something else, beginning by adding a new project to our polylith repository:
+Note the content of the `"app"` key, we've removed `app.py` and now we need to do something else, beginning by adding a new project to our polylith repository:
 
 ```bash
 poetry poly create project --name cdk_app
 ```
 
-The project name can be anything you need or want, this will be used to build a python package. Now the projects folder have a new subfolder `cdk_app` with a `pyproject.toml` file on it, is in this file that we combine our bases and components to build the artifact to deploy, edit this file and in the `package` property we will add what we need:
+The project name can be anything you need or want, this will be used to build a python package. Now the projects folder have a new subfolder `cdk_app` with a `pyproject.toml` file on it. In this file is where we combine our bases and components to build the artifact to deploy. Edit this file to add our include statements under the `package` property as shown below:
 
 ```toml
 packages = [
@@ -326,9 +339,9 @@ packages = [
 ]
 ```
 
-Note that we added a `../../` to bases and components since this pyproject file is two levels down in the path
+Note that we've added a `../../` to bases and components because this pyproject file is two levels down in the path
 
-We need to add the necessary dependencies form the `pyproject.toml` in the root folder, from there we only copy the need's for the bases and components included - no dev dependency.
+Next, we need to add the necessary dependencies form the `pyproject.toml` in the root folder, from there we only copy what we need for the bases and components, no dev dependencies.
 
 ```toml
 [tool.poetry.dependencies]
@@ -338,7 +351,7 @@ constructs = ">=10.0.0,<11.0.0"
 cdk-dynamo-table-view = "0.2.438"
 ```
 
-The final result should be something like
+The final result should be something like:
 
 ```toml
 [tool.poetry]
@@ -369,12 +382,11 @@ build-backend = "poetry.core.masonry.api"
 
 Running `poetry poly info` will show:
 
-![poetry poly info](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/2qycwdgpi3fqult0mjwp.png)
+![Workspace Summary](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/2qycwdgpi3fqult0mjwp.png)
 
-As you can see a new column has appeared and the brick's (bases and component) that the project use are marked.
+As you can see a new column has appeared and the bricks (bases and components) used by the project are marked.
 
-Move the `cdk.json` file to the project folder
-
+Next, move the `cdk.json` file to the project folder
 ```bash
 mv cdk.json projects/cdk_app/cdk.json
 ```
@@ -382,29 +394,29 @@ mv cdk.json projects/cdk_app/cdk.json
 But because we move our app object to the `bases/cdk_workshop/workshop_app/core.py` module we need to edit `cdk.json` and change the `app` entry to:
 
 ```
-
   "app": "python3 -m cdk_workshop.workshop_app.core"
 
 ```
 
-Let add a [checkpoint here and commit our changes](https://github.com/ybenitezf/cdk_polylith/commit/8a581b042588a0ec0271047fa293d143df0235fc).
+Let's add a [checkpoint here and commit our changes](https://github.com/ybenitezf/cdk_polylith/commit/8a581b042588a0ec0271047fa293d143df0235fc).
+
 
 ## cdk project new home
 
-In theory with this we can deploy our CDK application, lets test this:
+At this point we should be able to deploy our CDK application (theoretically speaking), let's test that assumption:
 
 ```bash
 cd projects/cdk_app
 poetry build-project
 ```
 
-This will create a `dist` directory in `projects/cdk_app` with the python package.
+This `build-project` command will create a `dist` directory under `projects/cdk_app` containing the python package.
 
-> this need's to be include in the `.gitignore`, to make this more simple copy over the [recommended gitignore for python](https://github.com/github/gitignore/blob/main/Python.gitignore) and add it to the .gitignore in the repository root (https://github.com/ybenitezf/cdk_polylith/commit/0c0eda0cf6f2d75e6899a8e18b2374663d4a8b8d).
+> This new directory need to be include in the `.gitignore` file. To make this step simpler, copy the content of the [recommended gitignore for python](https://github.com/github/gitignore/blob/main/Python.gitignore) file and add it to the .gitignore in the repository root as shown in [this example commit](https://github.com/ybenitezf/cdk_polylith/commit/0c0eda0cf6f2d75e6899a8e18b2374663d4a8b8d).
 
-![project folder files tree](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/h1tz7t111dvxwnzv2li9.png)
+![Here is a view of the project folder file tree](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/h1tz7t111dvxwnzv2li9.png)
 
-This python package contains our CDK app, so to test our theory we need to created a python virtual env, install this package and run `cdk synth` (in the `projects/cdk_app` folder) and will see the cloudformation template:
+This python package contains our CDK app. So, to test our theory we need to created a python virtual env, install this package, and run `cdk synth` (under the `projects/cdk_app` folder) to see the CloudFormation template:
 
 ```bash
 python3 -m venv .venv
@@ -413,13 +425,13 @@ pip install dist/cdk_app-0.1.0-py3-none-any.whl
 cdk synth
 ```
 
-Oops !!!, we get and error, something like:
+But wait, we get and error. Something like:
 
 ```
 RuntimeError: Cannot find asset at cdk_polylith/projects/cdk_app/lambda
 ```
 
-The cause of this is that the previous implementation assumed that any cdk command would be execute on the root of the repository and we have moved on to `projects/cdk_app`, to fix this we can move the `lambda` folder to `projects/cdk_app` and test again:
+The root cause for this error is that the previous implementation assumed that any cdk command would be execute on the root of the repository but our app has been moved to `projects/cdk_app`. To fix this, we need to move the `lambda` folder under `projects/cdk_app` and run `cdk synth` again:
 
 ```bash
 cd ../../
@@ -428,13 +440,14 @@ cd projects/cdk_app/
 cdk synth
 ```
 
-And now all work great !!! ... ummm not not really, all the idea behind polylith is that all the code live in the components or bases folders.
+Now all should work great!!! ... ummm no, not really. The idea behind polylith is that all code should live in the components or bases folders.
 
-Let's discard this last change and solve this problem in the polylith way - (remember to exit the venv created for the `cdk_app` project).
+So, let's go back, discard these last changes and solve this problem in the polylith way - (don't forget to exit the venv created for the `cdk_app` project).
 
-## Include lambda functions code
 
-So in this project we have 2 lambdas:
+## Include lambda functions code, the polilyth way.
+
+In this project we have 2 lambdas:
 
 ```
 ./lambda/
@@ -442,7 +455,7 @@ So in this project we have 2 lambdas:
 └── hitcount.py
 ```
 
-The plan here is to add two bases (one for each function). Botch are pretty simple, only `hitcount.py` have an external dependency to boto3.
+The plan here is to add to bases (one for each function) to the project. Both are pretty simple, only `hitcount.py` have an external dependency to boto3.
 
 Let's add the bases first:
 
@@ -451,9 +464,9 @@ poetry poly create base --name hello_lambda
 poetry poly create base --name hitcounter_lambda
 ```
 
-> **Note**: if these functions shared code, ie something that could be refactored so that they both use it, it would be a good idea to add a new component for this feature.
+> **Note**: If these functions shared code (e.g: something that could be refactored so that they both use it), it would be a good idea to add a new component for this feature.
 
-And we add this new bases to the main `pyproject.toml` packages property:
+Next, we add this new bases to the main `pyproject.toml` packages property:
 
 ```toml
 packages = [
@@ -465,7 +478,7 @@ packages = [
 ]
 ```
 
-And we add the dependencies to:
+Adding any dependencies too:
 
 ```
 poetry add boto3
@@ -473,7 +486,7 @@ poetry add boto3
 
 Run `poetry install && poetry run pytest test/` to ensure all is correct.
 
-And move the code:
+Now, let's move the code:
 
 ```bash
 mv lambda/hello.py bases/cdk_workshop/hello_lambda/core.py
@@ -481,16 +494,16 @@ mv lambda/hitcount.py bases/cdk_workshop/hitcounter_lambda/core.py
 rm -rf lambda/
 ```
 
-Let add a [checkpoint here and commit our changes](https://github.com/ybenitezf/cdk_polylith/commit/61d24f3917fb90a822bfca542bfa1576c01dc3a7).
+Let's add a [checkpoint here and commit our changes](https://github.com/ybenitezf/cdk_polylith/commit/61d24f3917fb90a822bfca542bfa1576c01dc3a7).
 
-The trick now is to generate a python package for each lambda function and use the bundling options of the lambda cdk construct to inject our code and requirements for the lambda's. Let begin by adding the projects for each lambda:
+The trick now is to generate a python package for each lambda function and use the bundling options of the lambda cdk construct to inject our code and requirements for the lambdas. Let's begin by adding the projects for each lambda:
 
 ```bash
 poetry poly create project --name hello_lambda_project
 poetry poly create project --name hitcounter_lambda_project
 ```
 
-we repeat the process, the same as for the `cdk_app`, the `projects/hello_lambda_project/pyproject.toml` should reference the `hello_lambda` base:
+Similar to the `cdk_app`, the `projects/hello_lambda_project/pyproject.toml` should reference the corresponding `hello_lambda` base:
 
 ```toml
 ...
@@ -502,7 +515,7 @@ packages = [
 ...
 ```
 
-And `projects/hitcounter_lambda_project/pyproject.toml` for `hitcounter_lambda` - including the dependency for `boto3`:
+And, the same for `projects/hitcounter_lambda_project/pyproject.toml` for `hitcounter_lambda` - including the dependency for `boto3`:
 
 ```toml
 packages = [
@@ -515,7 +528,7 @@ boto3 = "^1.26.123"
 
 ```
 
-In the `CdkWorkshopStack` code we change the lambda function definition to:
+In the `CdkWorkshopStack` file code we change the lambda function definition to:
 
 ```python
 
@@ -541,9 +554,9 @@ In the `CdkWorkshopStack` code we change the lambda function definition to:
 
 ```
 
-Note the `handler` declaration, as in `cdk.json` we are using the package full namespace to declare our handler, `_lambda.Runtime.PYTHON_3_9.bundling_image` will bundle the lambda code using the requirements.txt that we will generate.
+Note the `handler` declaration, like in `cdk.json` file we are using the package fully qualified namespace to declare our handler. The `_lambda.Runtime.PYTHON_3_9.bundling_image` property will build the lambda distribution using a `requirements.txt` file that we will generate.
 
-Let repeat the process for the `hitcounter_lambda`, in `components/cdk_workshop/hit_counter/core.py` we change:
+Let's repeat the process for the `hitcounter_lambda`. In `components/cdk_workshop/hit_counter/core.py` we change:
 
 ```python
 
@@ -563,16 +576,16 @@ Let repeat the process for the `hitcounter_lambda`, in `components/cdk_workshop/
 
 ```
 
-Add let's add the required folders (assets folders) to the `cdk_app` project.
+Add the required folders (assets folders) to the `cdk_app` project.
 
 ```
 mkdir -p mkdir -p projects/cdk_app/lambda/{hello,hitcounter}
 touch projects/cdk_app/lambda/{hello,hitcounter}/requirements.txt
 ```
 
-Let add a [checkpoint here and commit our changes](https://github.com/ybenitezf/cdk_polylith/commit/61d24f3917fb90a822bfca542bfa1576c01dc3a7).
+Alright, time for a [checkpoint and commit our changes](https://github.com/ybenitezf/cdk_polylith/commit/61d24f3917fb90a822bfca542bfa1576c01dc3a7).
 
-Now we try the deploy again, first we build the lambda's packages:
+Ok, let's try the deploy again. First, we build the lambda packages:
 
 ```bash
 cd projects/hello_lambda_project
@@ -582,7 +595,7 @@ poetry build-project
 cd ../../
 ```
 
-Our projects/ folder should have this structure:
+Our projects folder structure should look like this:
 
 ```
 ./projects/
@@ -626,16 +639,18 @@ source .venv/bin/activate
 pip install --force-reinstall dist/cdk_app-0.1.0-py3-none-any.whl
 ```
 
+> note: `Runtime.PYTHON_3_9.bundling_image` will fail if any of the packages need a greater version of python.
+
 Now we can deploy again:
 
 ```bash
-# from the projects/cdk_app/ with the python virtualenv active
+# from the projects/cdk_app/ with the python virtual env active
 cdk deploy
 ```
 
-It is importan to note that most of this process probably will be part of the DevOps setup, and rarely you will to any of this manually.
+It is important to note that most of this process is probably part of the DevOps setup, and rarely you will have to do any of this manually. But hey! it is better to know where things come from and be able to fix it than waiting on somebody else to fix it for you.
 
-**IMPORTANT** the lambda's will fail complaining that they can not find the handler module event if it is include correctly in the lambda package code, for this to work you need `Runtime.PYTHON_3_9` at least
+**IMPORTANT**, the lambdas will fail complaining that they can not find the handler module event if it is included correctly in the lambda package code. For this to work you'll need `Runtime.PYTHON_3_9` at least
 
 
 Let's add the last [checkpoint here and commit our changes](https://github.com/ybenitezf/cdk_polylith/commit/e70193a0c53f4cfd404cc00a1c8a382ce560b541).
@@ -643,10 +658,20 @@ Let's add the last [checkpoint here and commit our changes](https://github.com/y
 
 ## Final considerations
 
-- If you manage all your projects in this way, changing or staring a new project is an easy thing: all the repositories will look the same and have the same elements.
-- With all the code in the same repository you can see if something will break others parts of the system even if they are deployed separately.
-- There is a clear separation between the code and the deploy artifacts
+- This monorepo methodology makes it easy to start a new project or change an existing one.
+- All your repositories will look consistent with the same structure and elements.
+- With all the code in the same repository you can detect if something could potentially break other parts of the system even if they are deployed separately.
+- Last but not least, there is a clear separation between the code and the deploy artifacts
 
 
-- Thanks to Sebastian Aurei for the revision, corrections and help.
-- Thanks David Vujic for this excellent tool.
+I hope this article help you improve your coding skills, make your projects more organized and professional, and save you some time in the future.
+Go do something fun with that extra time.
+
+Until the next post,
+Take care and happy coding.
+
+## Acknowledgments
+
+Thanks to Robmay S. Garcia for the review, corrections and help.
+
+Thanks [David Vujic](https://github.com/DavidVujic) for this excellent tool.
